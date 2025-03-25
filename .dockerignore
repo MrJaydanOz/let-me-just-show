@@ -1,0 +1,8 @@
+__pycache__
+.venv
+
+jsconfig.json
+*.md
+.gitignore
+.dockerignore
+dockerfile

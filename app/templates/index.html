@@ -1,0 +1,524 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Web</title>
+    <script type="module" src="{% static 'base.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'base.css' %}">
+    <script>
+        /**
+        @param {Animatable} element
+        */function shakeElement(element)
+        {
+            const deltaX = (Math.random() - 0.5) * 10;
+            const deltaY = (Math.random() - 0.5) * 10;
+
+            element.animate([
+                { "translate": `${deltaX *  1.0}px ${deltaY *  1.0}px`, easing: "ease-in-out" },
+                { "translate": `${deltaX * -0.8}px ${deltaY * -0.8}px`, easing: "ease-in-out" },
+                { "translate": `${deltaX *  0.6}px ${deltaY *  0.6}px`, easing: "ease-in-out" },
+                { "translate": `${deltaX * -0.4}px ${deltaY * -0.4}px`, easing: "ease-in-out" },
+                { "translate": `${deltaX *  0.2}px ${deltaY *  0.2}px`, easing: "ease-in-out" },
+                { "translate": `${deltaX *  0.0}px ${deltaY *  0.0}px`, easing: "ease-in-out" },
+            ],
+            {
+                duration: 250,
+            });
+        }
+
+        /**
+        @param {Iterable<Animatable>} elements
+        */function shakeElements(elements)
+        {
+            for (const element of elements)
+                shakeElement(element);
+        }
+    </script>
+</head>
+<body class="main">
+    {% include "../static/filters.svg" %}
+    <div id="page-none" scroll-sets-title-sentence="none" style="height: 100vh">
+        <sentence-dropdown class="main" sentence="Let me just [mode: none=; request]" sync-id="title" name="none"></sentence-dropdown>
+    </div>
+    <div id="page-request" scroll-sets-title-sentence="request">
+        <script>
+            /**
+            @returns {Promise<RequestBox>}
+            @public*/ function getRequestBox()
+            {
+                return new Promise((resolve) =>
+                {
+                    const box = new RequestBox(() => resolve(box));
+                });
+            }
+
+            /**
+            */ class RequestBox extends HTMLElement
+            {
+                /**
+                @param {() => void} [onReady]
+                @public*/ constructor(onReady)
+                {
+                    super();
+
+                    import("{% static 'inline-include.js' %}").then((iInlcude) =>
+                    {
+                        const refreshPromise = iInlcude.requestElement("{% static 'retry-icon.svg' %}");
+                        const crossPromise = iInlcude.requestElement("{% static 'cross-icon.svg' %}");
+                        let jsonPromiseResolve = () => {};
+                        const jsonPromise = /** @type {Promise<void>} */(new Promise((resolve) => jsonPromiseResolve = resolve));
+
+                        const header = this.appendChild(document.createElement("content-row"));
+                        {
+                            /**
+                            @private*/ this._refreshButton = header.appendChild(document.createElement("button"));
+                            this._refreshButton.classList.add("refresh");
+                            refreshPromise.then((v) => this._refreshButton.appendChild(v));
+
+                            this._refreshButton.addEventListener("click", () => requestRefresh());
+                        }
+                        {
+                            /**
+                            @private*/ this._closeButton = header.appendChild(document.createElement("button"));
+                            this._closeButton.classList.add("close");
+                            crossPromise.then((v) => this._closeButton.appendChild(v));
+
+                            this._closeButton.addEventListener("click", () => this.close());
+                        }
+
+                        const code = this.appendChild(document.createElement("code-json"));
+                        {
+                            const request = new XMLHttpRequest();
+                            request.open("GET", "/do-request");
+
+                            request.addEventListener("load", () =>
+                            {
+                                if (request.response instanceof Document)
+                                    code.appendChild(request.response.querySelector("*"));
+                                else
+                                {
+                                    try
+                                    {
+                                        for (const match of (
+                                            typeof request.response === "string" ? JSON.stringify(JSON.parse(request.response), undefined, "  ") :
+                                            typeof request.response === "object" ? JSON.stringify(request.response, undefined, "  ") :
+                                            "ERROR")
+                                            .matchAll(/(?<b>[{}[\]])|(?<t>\".*?\"(?=\s*\:))|(?<v>\".*?\"|[^\s,:{}[\]]+)|[\s,:]+/g))
+                                        {
+                                            if (match.groups === undefined)
+                                                continue;
+
+                                            if (match.groups["b"] !== undefined)
+                                            {
+                                                const span = code.appendChild(document.createElement("span"));
+                                                span.classList.add("b");
+                                                span.textContent = match.groups["b"];
+                                            }
+                                            else if (match.groups["t"] !== undefined)
+                                            {
+                                                const span = code.appendChild(document.createElement("span"));
+                                                span.classList.add("t");
+                                                span.textContent = match.groups["t"];
+                                            }
+                                            else if (match.groups["v"] !== undefined)
+                                            {
+                                                const span = code.appendChild(document.createElement("span"));
+                                                span.classList.add("v");
+                                                span.textContent = match.groups["v"];
+                                            }
+                                            else
+                                                code.appendChild(document.createTextNode(match[0]));
+                                        }
+                                    }
+                                    catch (e)
+                                    {
+                                        code.textContent = "ERROR: " + String(e);
+                                    }
+                                }
+
+                                jsonPromiseResolve();
+                            });
+
+                            request.addEventListener("error", () => { throw 0 });
+
+                            request.send();
+                        }
+
+                        Promise.all([refreshPromise, crossPromise, jsonPromise]).then(onReady === undefined ? undefined : () => onReady());
+                    });
+                }
+
+                /**
+                @public*/ close()
+                {
+                    this._closeButton.disabled = true;
+                    this._refreshButton.disabled = true;
+    
+                    const randomAxisX = Math.random() - 0.5;
+                    const randomAxisY = Math.random() - 0.5;
+                    const randomAxisZ = Math.random() - 0.5;
+    
+                    this.style.translate = `0 calc((var(--num1) * var(--num1)) * 1000px)`;
+    
+                    this.style.transform = `translate3d(0, 0, 0) rotate3d(${randomAxisX}, ${randomAxisY}, ${randomAxisZ}, 0)`;
+                    this.style.opacity = "1.0";
+                    this.style.setProperty("--num1", "0");
+                    
+                    this.classList.add("glow");
+    
+                    this.style.transition = "transform 1.0s linear, opacity 1.0s linear, --num1 1.0s linear";
+                    requestAnimationFrame(() =>
+                    {
+                        this.style.transform = `translate3d(${(Math.random() - 0.5) * 600}px, ${(Math.random() - 0.8) * 600}px, ${(Math.random() * -600) - 400}px) rotate3d(${randomAxisX}, ${randomAxisY}, ${randomAxisZ}, ${Math.random() * 200}deg)`;
+                        this.style.opacity = "0.0";
+                        this.style.setProperty("--num1", "1");
+
+                        this.classList.remove("glow");
+                    });
+    
+                    this.classList.add("closed");
+    
+                    setTimeout(() => this.remove(), 1000);
+                }
+            }
+            customElements.define("request-box", RequestBox);
+
+            /**
+            */ function requestClose()
+            {
+                for (const element of /** @type {NodeListOf<RequestBox>} */(document.querySelectorAll("#request-container > request-box:not(.closed)")))
+                    element.close();
+            }
+
+            /**
+            */ function requestRefresh()
+            {
+                requestClose();
+
+                /**
+                @param {boolean} reversed
+                @returns {SVGPathElement}
+                */ function createArrow(reversed)
+                {
+                    const arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+                    const lineStartPosX = (reversed ? 512 - 128 : 128) + ((Math.random() - 0.5) * 64);
+                    const lineStartPosY = 128 + ((Math.random() - 0.5) * 64);
+                    const lineEndPosX = (reversed ? 128 : 512 - 64) + ((Math.random() - 0.5) * 64);
+                    const lineEndPosY = 128 + ((Math.random() - 0.5) * 64);
+                    const lineControlPoint1X = lineStartPosX + (reversed ? -64 : 64) + ((Math.random() - 0.5) * 64);
+                    const lineControlPoint1Y = lineStartPosY + (reversed ? 64 : -64) + ((Math.random() - 0.5) * 64);
+                    const lineControlPoint2X = lineEndPosX + (reversed ? 64 : -64) + ((Math.random() - 0.5) * 64);
+                    const lineControlPoint2Y = lineEndPosY + (reversed ? 64 : -64) + ((Math.random() - 0.5) * 64);
+
+                    const headArm1PosX = lineEndPosX + (reversed ? 64 : -64) + ((Math.random() - 0.5) * 32);
+                    const headArm1PosY = lineEndPosY + (reversed ? -16 : 16) + ((Math.random() - 0.5) * 32);
+                    const headArm1ControlPointX = ((lineEndPosX + headArm1PosX) * 0.5) + ((Math.random() - 0.5) * 16);
+                    const headArm1ControlPointY = ((lineEndPosY + headArm1PosY) * 0.5) + ((Math.random() - 0.5) * 16);
+
+                    const headArm2PosX = lineEndPosX + (reversed ? -0 : 0) + ((Math.random() - 0.5) * 32);
+                    const headArm2PosY = lineEndPosY + (reversed ? 64 : -64) + ((Math.random() - 0.5) * 32);
+                    const headArm2ControlPointX = ((lineEndPosX + headArm2PosX) * 0.5) + ((Math.random() - 0.5) * 16);
+                    const headArm2ControlPointY = ((lineEndPosY + headArm2PosY) * 0.5) + ((Math.random() - 0.5) * 16);
+
+                    arrow.setAttribute("d", `M${lineStartPosX} ${lineStartPosY}C${lineControlPoint1X} ${lineControlPoint2Y},${lineControlPoint2X} ${lineControlPoint1Y},${lineEndPosX} ${lineEndPosY}Q${headArm1ControlPointX} ${headArm1ControlPointY},${headArm1PosX} ${headArm1PosY}M${lineEndPosX} ${lineEndPosY}Q${headArm2ControlPointX} ${headArm2ControlPointY},${headArm2PosX} ${headArm2PosY}`);
+
+                    arrow.style.fill = "none";
+                    arrow.style.strokeLinecap = "round";
+                    arrow.style.strokeLinejoin = "round";
+                    arrow.style.strokeWidth = "32";
+                    arrow.style.stroke = "var(--color-bold)";
+                    arrow.style.filter = "brightness(100%) saturate(100%)";
+                    arrow.style.opacity = "1.0";
+
+                    arrow.style.transition = "filter 5.0s var(--curve-fade-out), opacity 5.0s var(--curve-fade-in-out)";
+                    requestAnimationFrame(() =>
+                    {
+                        arrow.style.filter = "brightness(50%) saturate(10%)";
+                        arrow.style.opacity = "0.0";
+                    });
+
+                    setTimeout(() => arrow.remove(), 5000);
+
+                    return arrow;
+                }
+
+                shakeElement(document.getElementById("request-arrow-to").appendChild(createArrow(false)));
+                shakeElements(document.querySelectorAll("#page-request [shakeable]"));
+
+                getRequestBox().then((v) =>
+                {
+                    document.getElementById("request-container").appendChild(v);
+
+                    shakeElement(document.getElementById("request-arrow-from").appendChild(createArrow(true)));
+                    shakeElements(document.querySelectorAll("#page-request [shakeable]"));
+                });
+            }
+        </script>
+        <style>
+            #page-request
+            {
+                position: relative;
+                overflow: hidden;
+
+                --color-down: #263D42;
+                --color-up: #63C7B2;
+                --color-line: #F3E8EE;
+                --color-block: #413F4B;
+                --color-bold: #DC0073;
+
+                & sentence-dropdown
+                {
+                    color: var(--color-line);
+                    text-shadow: 0 0 4px var(--color-line);
+                }
+
+                & > section
+                {
+                    & > perspective-container
+                    {
+                        display: flex; flex-flow: row nowrap; align-items: center; justify-content: center;
+                        position: relative;
+                        pointer-events: none;
+
+                        & > background-color
+                        {
+                            top: 0; bottom: 0; left: 0; right: 0;
+                            position: absolute;
+                            background: linear-gradient(to bottom, black, hsl(from var(--color-down) h s calc(l * 1.5)));
+                            transform: translateZ(-1000vw) scale(30);
+                            transform-origin: center;
+                            z-index: -10;
+                        }
+
+                        & > background-grid
+                        {
+                            top: -999vh; bottom: -999vh; left: -999vw; right: -999vw;
+                            position: absolute;
+                            background: url("{% static 'dot-grid.svg' %}") center;
+                            mix-blend-mode: soft-light;
+                            z-index: -10;
+                        }
+
+                        & > content-container
+                        {
+                            flex-direction: row;
+                            position: relative;
+
+                            & > .client
+                            {
+                                width: 360px;
+                                height: 360px;
+                                position: relative;
+
+                                & > request-box
+                                {
+                                    top: 0; bottom: 0; left: 0; right: 0; 
+                                    width: fit-content;
+                                    height: fit-content;
+                                    margin: auto; 
+                                    border-radius: 8px;
+                                    position: absolute;
+                                    pointer-events: auto;
+                                    display: flex; flex-flow: column nowrap; align-items: stretch; justify-content: stretch;
+                                    box-shadow: 8px 8px 32px #00000044;
+
+                                    &.closed
+                                    {
+                                        filter: brightness(50%);
+
+                                        & > button
+                                        {
+                                            padding: 8px;
+                                            background: var(--color-block);
+                                            color: #FFFFFF88;
+                                        }
+                                    }
+
+                                    & > :first-child { border-top-left-radius: 8px; border-top-right-radius: 8px; }
+                                    & > :last-child { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+
+                                    & > content-row
+                                    {
+                                        background: var(--color-block);
+                                        justify-content: space-between;
+
+                                        & > :first-child { border-top-left-radius: 8px; }
+                                        & > :last-child { border-top-right-radius: 8px; }
+
+                                        & > button
+                                        {
+                                            padding: 8px;
+                                            background: var(--color-block);
+                                            color: white;
+                                            --color-back-hover: hsl(from var(--color-block) h s calc(l * 1.5));
+                                            --color-icon-hover: white;
+
+                                            &.close
+                                            {
+                                                --color-back-hover: #DD0000;
+                                                --color-icon-hover: white;
+                                            }
+
+                                            &:hover, &:focus-visible
+                                            {
+                                                background: var(--color-back-hover);
+                                                color: var(--color-icon-hover);
+                                            }
+
+                                            &:active
+                                            {
+                                                background: hsl(from var(--color-back-hover) h s calc(l * 0.8));
+                                                color: hsl(from var(--color-icon-hover) h s calc(l * 0.8));
+                                            }
+
+                                            & > svg
+                                            {
+                                                display: block;
+                                                width: 18px;
+                                                height: 18px;
+                                            }
+                                        }
+                                    }
+
+                                    & > code-json
+                                    {
+                                        padding: 8px;
+                                        border: 3px solid var(--color-block);
+                                        border-top-width: 0;
+                                        background: hsl(from var(--color-block) h s calc(l * 0.5));
+                                        color: white;
+                                        font-size: 16px;
+                                    }
+
+                                    &::after
+                                    {
+                                        background: transparent;
+                                        transition: background-color 5.0s var(--curve-fade-out);
+                                    }
+                                    &.glow::after
+                                    {
+                                        background: var(--color-bold);
+                                    }
+                                }
+                            }
+
+                            & > .server
+                            {
+                                width: 360px;
+                                height: 360px;
+                                position: relative;
+                                display: flex; flex-flow: column nowrap; align-items: stretch; justify-content: stretch;
+                                filter: drop-shadow(8px 8px 32px #00000044) drop-shadow(0 0 4px var(--color-up));
+                                pointer-events: auto;
+
+                                & > svg
+                                {
+                                    width: 100%;
+                                    height: 100%;
+                                    position: absolute;
+                                    color: var(--color-up);
+                                }
+
+                                & > div
+                                {
+                                    display: flex; flex-flow: column nowrap; align-items: center; justify-content: center;
+                                    flex-grow: 1;
+
+                                    & > button
+                                    {
+                                        padding: 32px;
+                                        border-radius: 16px;
+                                        background: var(--color-block);
+                                        color: white;
+                                        --color-back-hover: var(--color-down);
+                                        --color-icon-hover: var(--color-up);
+
+                                        &:hover, &:focus-visible
+                                        {
+                                            background: var(--color-back-hover);
+                                            color: var(--color-icon-hover);
+                                        }
+
+                                        &:active
+                                        {
+                                            background: hsl(from var(--color-back-hover) h s calc(l * 0.8));
+                                            color: hsl(from var(--color-icon-hover) h s calc(l * 0.8));
+                                        }
+
+                                        & > svg
+                                        {
+                                            display: block;
+                                            width: 32px;
+                                            height: 32px;
+                                        }
+                                    }
+                                }
+                            }
+
+                            & > .arrows
+                            {
+                                margin: 0 -128px;
+                                
+                                & > svg
+                                {
+                                    width: 512px;
+                                    height: 256px;
+                                    margin: 0 0;
+                                }
+                            }
+                            
+                            @media screen and (max-width: 1000px)
+                            {
+                                flex-direction: column-reverse;
+
+                                & > .server
+                                {
+                                    width: 256px;
+                                    height: 256px;
+                                }
+
+                                & > .arrows
+                                {
+                                    margin: -186px 0;
+                                    transform: rotate(90deg) scale(0.6);
+
+                                    & > svg
+                                    {
+                                        width: 512px;
+                                        height: 256px;
+                                        margin: 0 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        </style>
+        <section>
+            <perspective-container>
+                <background-color></background-color>
+                <background-grid style="opacity: 0.5; transform: translateZ(-317vw) translate(5vw, 5vw) scale(6.1324);" shakeable></background-grid>
+                <background-grid style="opacity: 0.2; transform: translateZ(-517vw) translate(5vw, 5vw) scale(6.1324);" shakeable></background-grid>
+                <content-container>
+                    <content-container id="request-container" class="client" shakeable></content-container>
+                    <content-container class="arrows">
+                        <svg id="request-arrow-to" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 256"></svg>
+                        <svg id="request-arrow-from" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 256"></svg>
+                    </content-container>
+                    <content-container class="server" shakeable>
+                        {% include "../static/cloud-image.svg" %}
+                        <div>
+                            <button onclick="requestRefresh()">{% include "../static/retry-icon.svg" %}</button>
+                        </div>
+                    </content-container>
+                </content-container>
+            </perspective-container>
+        </section>
+        <sentence-dropdown class="main" sentence="Let me just [mode: none=; request]" sync-id="title" name="request"></sentence-dropdown>
+    </div>
+</body>
+</html>

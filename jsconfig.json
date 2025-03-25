@@ -1,0 +1,9 @@
+{
+    "compilerOptions":
+    {
+        "checkJs": true,
+        "strictNullChecks": true,
+        "noImplicitAny": true,
+        "target": "ES2024",
+    }
+}

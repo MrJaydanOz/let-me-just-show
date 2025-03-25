@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" style="color: white">
+	<defs>
+		<linearGradient id="glow-1" gradientTransform="rotate(0)">
+			<stop offset="0" stop-color="currentColor" stop-opacity="1"/>
+			<stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+		</linearGradient>
+		<linearGradient id="glow-2" gradientTransform="rotate(90)">
+			<stop offset="0" stop-color="currentColor" stop-opacity="1"/>
+			<stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+		</linearGradient>
+		<linearGradient id="glow-3" gradientTransform="rotate(0)">
+			<stop offset="0" stop-color="currentColor" stop-opacity="0"/>
+			<stop offset="1" stop-color="currentColor" stop-opacity="1"/>
+		</linearGradient>
+		<linearGradient id="glow-4" gradientTransform="rotate(90)">
+			<stop offset="0" stop-color="currentColor" stop-opacity="0"/>
+			<stop offset="1" stop-color="currentColor" stop-opacity="1"/>
+		</linearGradient>
+	</defs>
+	<path stroke="currentColor" stroke-width="8" fill="none" d="M0 64 V0 H64"/>
+	<rect x="4" y="4" width="34" height="60" fill="url(#glow-1)" fill-opacity="0.05"/>
+	<rect x="4" y="4" width="60" height="34" fill="url(#glow-2)" fill-opacity="0.05"/>
+	<rect x="30" y="4" width="34" height="60" fill="url(#glow-3)" fill-opacity="0.05"/>
+	<rect x="4" y="30" width="60" height="34" fill="url(#glow-4)" fill-opacity="0.05"/>
+	<rect x="4" y="4" width="8" height="60" fill="url(#glow-1)" fill-opacity="0.2"/>
+	<rect x="4" y="4" width="60" height="8" fill="url(#glow-2)" fill-opacity="0.2"/>
+	<rect x="56" y="4" width="8" height="60" fill="url(#glow-3)" fill-opacity="0.2"/>
+	<rect x="4" y="56" width="60" height="8" fill="url(#glow-4)" fill-opacity="0.2"/>
+</svg>

@@ -1,0 +1,48 @@
+<svg width="0" height="0" style="position:absolute">
+    <filter id="filter-chmabbr">
+        <feColorMatrix type="matrix" in="SourceGraphic" result="red"
+        values="2 0 0 0 0
+                0 0 0 0 0 
+                0 0 0 0 0 
+                0 0 0 1 0"/>
+        <feOffset in="red" dx="3" dy="0" result="red-offset"/>
+        <feColorMatrix type="matrix" in="SourceGraphic" result="blue"
+        values="0 0 0 0 0
+                0 2 0 0 0 
+                0 0 2 0 0 
+                0 0 0 1 0"/>
+        <feOffset in="blue" dx="-3" dy="0" result="blue-offset"/>    
+        <feBlend mode="screen" in="red-offset" in2="blue-offset"/>
+    </filter>
+    <filter id="filter-chmabbr-pulse">
+        <feColorMatrix type="matrix" in="SourceGraphic" result="red">
+            <animate
+            attributeName="values"
+            values="2 0 0 0 0
+                    0 0 0 0 0 
+                    0 0 0 0 0 
+                    0 0 0 1 0;
+                    1 0 0 0 0
+                    0 0 0 0 0
+                    0 0 0 0 0
+                    0 0 0 1 0"
+            dur="0.5s"/>
+        </feColorMatrix>
+        <feOffset in="red" dx="3" dy="0" result="red-offset"/>
+        <feColorMatrix type="matrix" in="SourceGraphic" result="blue">
+            <animate
+            attributeName="values"
+            values="0 0 0 0 0
+                    0 2 0 0 0 
+                    0 0 2 0 0 
+                    0 0 0 1 0;
+                    0 0 0 0 0
+                    0 1 0 0 0
+                    0 0 1 0 0
+                    0 0 0 1 0"
+            dur="0.5s"/>
+        </feColorMatrix>
+        <feOffset in="blue" dx="-3" dy="0" result="blue-offset"/>    
+        <feBlend mode="screen" in="red-offset" in2="blue-offset"/>
+    </filter>
+</svg>

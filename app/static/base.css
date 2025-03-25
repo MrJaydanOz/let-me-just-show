@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root
+{
+    --font-code: "JetBrains Mono", monospace;
+    --font-normal: "Montserrat", sans-serif;
+
+    --curve-fade-out: cubic-bezier(0.1, 1, 0.1, 1);
+    --curve-fade-in-out: cubic-bezier(0.2, 0, 0, 1);
+
+    font-family: var(--font-normal);
+
+    user-select: none;
+}
+
+*
+{
+    margin: 0;
+    border: 0;
+    padding: 0;
+}
+
+@property --num1 { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --num2 { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --num3 { syntax: "<number>"; inherits: false; initial-value: 0; }
+
+html:has(body.main)
+{
+    scroll-snap-type: y proximity;
+
+    body.main
+    {
+        display: flex; flex-flow: column nowrap; align-items: stretch;
+
+        & > div
+        {
+            min-height: calc(100vh - 4vw);
+            display: flex; flex-flow: column nowrap; align-items: stretch;
+            scroll-snap-align: start;
+            clip-path: inset(0);
+
+            & > section
+            {
+                margin: 20vw 2vw 8vw;
+                display: flex; flex-flow: column nowrap; align-items: center; justify-content: center;
+                flex-grow: 1;
+            }
+        }
+    }
+}
+
+perspective-container
+{
+    display: block;
+    flex-grow: 1;
+    align-self: stretch;
+    justify-self: stretch;
+    transform: translate3d(0, 0, 0);
+
+    & *
+    {
+        transform-style: preserve-3d;
+    }
+}
+
+background-color, background-grid, .background
+{
+    display: block;
+    top: 0; bottom: 0; left: 0; right: 0;
+    position: absolute;
+    z-index: -10;
+}
+
+content-container { display: flex; flex-flow: column nowrap; align-items: center; justify-content: center; align-content: center; }
+content-column { display: flex; flex-flow: column nowrap; align-items: stretch; justify-content: stretch; align-content: stretch; }
+content-row { display: flex; flex-flow: row nowrap; align-items: stretch; justify-content: stretch; align-content: stretch; }
+
+code, code-json
+{
+    display: block;
+    font-family: var(--font-code);
+    white-space: pre-wrap;
+    font-variant-ligatures: none;
+}
+code-json
+{
+    & > span.b { color: #AAAAAA; }
+    & > span.t { color: #E979FF; }
+    & > span.v { color: #FF9C5A; }
+}
+
+@property --dropdown-count { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --dropdown-index { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+sentence-dropdown
+{
+    font: 600 40px var(--font-normal);
+    display: flex; flex-flow: row wrap; align-items: center; justify-content: center; align-content: center;
+    column-gap: 0.25em;
+
+    &.main
+    {
+        position: fixed; top: 1em; left: 0; right: 0;
+        font-size: calc(32px + 4vw);
+        font-weight: 700;
+        transition: top 2.0s var(--curve-fade-in-out);
+
+        &[values~="0"]
+        {
+            top: calc(50% - 0.75em);
+        }
+    }
+
+    & > span
+    {
+        display: block;
+    }
+
+    & > div
+    {
+        height: 1em;
+        display: flex; flex-flow: row nowrap; align-items: center; justify-content: center;
+        border-bottom: 0.05em solid rgba(from currentColor r g b / 0.2);
+
+        & > ul
+        {
+            width: 5em;
+            margin: calc(var(--dropdown-index) * -0.6em) 0 calc((var(--dropdown-count) - var(--dropdown-index) - 1) * -0.6em);
+            display: flex; flex-flow: column nowrap; align-items: stretch; justify-content: center;
+            transition: --dropdown-index 0.8s var(--curve-fade-out);
+
+            & > li
+            {
+                /* Uses properties so that scaling the window dosen't have a delay effect. */
+                --num1: 0.4;
+                --num2: calc(0.6 / 0.4);
+                height: calc(var(--num2) * 1em);
+                display: flex; flex-flow: row nowrap; align-items: center; justify-content: center;
+                color: rgba(from currentColor r g b / 0.2);
+                font-weight: 500;
+                font-size: calc(var(--num1) * 1em);
+                list-style: none;
+                cursor: pointer;
+                transition: --num1 1.2s var(--curve-fade-out), --num2 1.2s var(--curve-fade-out), color 0.4s ease-out;
+
+                &[aria-checked="true"]
+                {
+                    --num1: 0.8;
+                    --num2: calc(1.4 / 0.8);
+                    --num3: 0.3;
+                    color: rgba(from currentColor r g b / 1.0);
+                    cursor: default;
+                    transition: --num1 0.4s var(--curve-fade-out), --num2 0.4s var(--curve-fade-out);
+                }
+            }
+        }
+    }
+}
